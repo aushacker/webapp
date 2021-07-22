@@ -6,7 +6,7 @@ on:
 
 env:
   AZURE_RESOURCE_GROUP: 'Github-webapp'
-  AZURE_APP_PLAN: actions-web-deployment
+  AZURE_APP_PLAN: webapp-plan
   AZURE_LOCATION: '"Australia East"'
   AZURE_WEBAPP_NAME: aushacker-webapp
 
