@@ -1,0 +1,47 @@
+name: Configure Lab02
+
+on: 
+  workflow_dispatch:
+    inputs:
+      action:
+        description: 'Action'     
+        required: true
+        default: 'create'
+
+env:
+  AZURE_LOCATION: '"Australia East"'
+  AZURE_RESOURCE_GROUP: Lab02-RG
+
+jobs:
+  create-azure-resources:
+    runs-on: ubuntu-latest
+
+    if: contains(github.event.inputs.action, 'c')
+
+    steps:
+
+      - name: Azure login
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Create Azure resource group
+        if: success()
+        run: |
+          az group create --location ${{env.AZURE_LOCATION}} --name ${{env.AZURE_RESOURCE_GROUP}} --subscription ${{secrets.AZURE_SUBSCRIPTION_ID}}
+  destroy-azure-resources:
+    runs-on: ubuntu-latest
+
+    if: contains(github.event.inputs.action, 'd')
+
+    steps:
+
+      - name: Azure login
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Destroy Azure environment
+        if: success()
+        run: |
+          az group delete --name ${{env.AZURE_RESOURCE_GROUP}} --subscription ${{secrets.AZURE_SUBSCRIPTION_ID}} --yes
