@@ -6,23 +6,56 @@ on:
   pull_request:
     branches: [ main ]
 
+env:
+  DOCKER_IMAGE_NAME: webapp
+
 jobs:
   build:
-
     runs-on: ubuntu-latest
-
     steps:
-    - uses: actions/checkout@v2
-    - name: Set up JDK 11
+    -
+      name: Checkout
+      uses: actions/checkout@v2
+    -
+      name: Set up JDK 8
       uses: actions/setup-java@v2
       with:
-        java-version: '11'
+        java-version: '8'
         distribution: 'adopt'
-    - name: Cache Maven packages
+    -
+      name: Cache Maven packages
       uses: actions/cache@v2
       with:
         path: ~/.m2
         key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
         restore-keys: ${{ runner.os }}-m2
-    - name: Build with Maven
+    -
+      name: Build with Maven
       run: mvn -B package --file pom.xml
+    -
+      name: Upload .war file
+      uses: actions/upload-artifact@main
+      with:
+        name: ROOT.war
+        path: target/webapp*.war
+
+# Build image and store in GitHub Packages
+  docker-image:
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      -
+        name: Checkout
+        uses: actions/checkout@v2
+      -
+        name: Download built artifact
+        uses: actions/download-artifact@main
+        with:
+          name: ROOT.war
+          path: ROOT.war
+      -
+        name: Create image and store in Packages
+        uses: mattdavis0351/actions/docker-gpr@1.3.0
+        with:
+          repo-token: ${{secrets.GITHUB_TOKEN}}
+          image-name: ${{env.DOCKER_IMAGE_NAME}}
