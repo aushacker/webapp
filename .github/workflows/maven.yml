@@ -7,7 +7,7 @@ on:
     branches: [ main ]
 
 env:
-  DOCKER_IMAGE_NAME: aushacker-webapp
+  DOCKER_IMAGE_NAME: webapp
 
 jobs:
   build:
@@ -39,10 +39,10 @@ jobs:
         name: ROOT.war
         path: target/webapp*.war
 
+# Build image and store in GitHub Packages
   docker-image:
     runs-on: ubuntu-latest
     needs: build
-    name: Build image and store in GitHub Packages
     steps:
       -
         name: Checkout
