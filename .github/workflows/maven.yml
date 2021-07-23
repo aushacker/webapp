@@ -33,11 +33,14 @@ jobs:
       name: Build with Maven
       run: mvn -B package --file pom.xml
     -
+      name: Rename .war file
+      run: mv target/webapp*.war target/ROOT.war
+    -
       name: Upload .war file
       uses: actions/upload-artifact@main
       with:
         name: ROOT.war
-        path: target/webapp*.war
+        path: target/ROOT.war
 
 # Build image and store in GitHub Packages
   docker-image:
