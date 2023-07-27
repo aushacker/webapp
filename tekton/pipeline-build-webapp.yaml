@@ -1,0 +1,67 @@
+kind: Pipeline
+apiVersion: tekton.dev/v1beta1
+metadata:
+  name: build-webapp
+spec:
+  params:
+    - name: git-url
+      type: string
+      description: git repo url
+    - name: git-revision
+      type: string
+      description: "branch, tag, sha etc."
+      default: main
+    - name: git-subdir
+      type: string
+      description: git subdirectory
+      default: ""
+  workspaces:
+    - name: data
+    - name: maven-settings
+  tasks:
+    - name: git-clone
+      taskRef:
+        name: git-clone
+        kind: ClusterTask
+      params:
+        - name: url
+          value: $(params.git-url)
+        - name: revision
+          value: $(params.git-revision)
+        - name: subdirectory
+          value: $(params.git-subdir)
+      workspaces:
+        - name: output
+          workspace: data
+    - name: maven
+      taskRef:
+        name: maven
+        kind: ClusterTask
+      runAfter:
+        - git-clone
+      params:
+        - name: CONTEXT_DIR
+          value: webapp
+        - name: GOALS
+          value:
+            - --batch-mode
+            - clean
+            - package
+      workspaces:
+        - name: source
+          workspace: data
+        - name: maven-settings
+          workspace: maven-settings
+    - name: debug
+      taskRef:
+        name: bash
+      runAfter:
+        - maven
+      params:
+        - name: SCRIPT
+          value: |
+            #!/bin/bash
+            ls /workspace/source/target
+      workspaces:
+        - name: source
+          workspace: data
