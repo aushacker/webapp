@@ -52,6 +52,35 @@ spec:
           workspace: data
         - name: maven-settings
           workspace: maven-settings
+    - name: rename
+      taskRef:
+        name: bash
+      runAfter:
+        - maven
+      params:
+        - name: SCRIPT
+          value: |
+            #!/bin/bash
+            cp /workspace/source/webapp/target/webapp*.war /workspace/source/ROOT.war
+      workspaces:
+        - name: source
+          workspace: data
+    - name: build-image
+      taskRef:
+        name: buildah
+        kind: ClusterTask
+      runAfter:
+        - rename
+      params:
+        - name: IMAGE
+          value: quay.io/sdavies/tomcat-demo
+        - name: DOCKERFILE
+          value: Dockerfile.jws
+        - name: SKIP_PUSH
+          value: true
+      workspaces:
+        - name: source
+          workspace: data
     - name: debug
       taskRef:
         name: bash
@@ -61,7 +90,8 @@ spec:
         - name: SCRIPT
           value: |
             #!/bin/bash
-            ls /workspace/source/target
+            ls /workspace/source/webapp/target
+            ls /workspace/source
       workspaces:
         - name: source
           workspace: data
