@@ -1,7 +1,3 @@
-FROM tomcat:10-jdk8
+FROM docker.io/library/tomcat:9.0-jdk11
 
-ADD ROOT.war /usr/local/tomcat/webapps
-
-EXPOSE 8080
-
-CMD ["catalina.sh", "run"]
+COPY ROOT.war webapps/
