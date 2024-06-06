@@ -18,6 +18,7 @@ spec:
   workspaces:
     - name: data
     - name: maven-settings
+    - name: dockerconfig
   tasks:
     - name: git-clone
       taskRef:
@@ -52,7 +53,7 @@ spec:
           workspace: data
         - name: maven-settings
           workspace: maven-settings
-    - name: rename
+    - name: copy-artifacts
       taskRef:
         name: bash
       runAfter:
@@ -70,22 +71,26 @@ spec:
         name: buildah
         kind: ClusterTask
       runAfter:
-        - rename
+        - copy-artifacts
       params:
         - name: IMAGE
           value: quay.io/sdavies/tomcat-demo
         - name: DOCKERFILE
-          value: Dockerfile.jws
+          value: Dockerfile
+        - name: STORAGE_DRIVER
+          value: "vfs --log-level=debug"
         - name: SKIP_PUSH
-          value: true
+          value: 'false'
       workspaces:
         - name: source
           workspace: data
+        - name: dockerconfig
+          workspace: dockerconfig
     - name: debug
       taskRef:
         name: bash
       runAfter:
-        - maven
+        - copy-artifacts
       params:
         - name: SCRIPT
           value: |
